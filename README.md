@@ -36,7 +36,7 @@ On the other hand, the time resource is exclusively `used` by the task that owns
 Untracked tasks doues not deserve nor consume any time resources.
 
 
-** Background
+## Background
 
 Getting things done is great way of organizing things, but it lacks a few thing: it doesn't tell you the precise order of doing the tasks. It doesn't tell you how to balance the effort you put into different project.
 
@@ -44,7 +44,8 @@ This is a problem if you have creative tasks in parallel with deadlined tasks. C
 
 Dothistroma is a tiny script that helps us do this.
 
-** Acknowledgement
+
+## Acknowledgement
 
 - Dothistroma is still in a very new phase and are welcome for suggestion and improvements.
 - I can't thank enough the creators of [Org-mode](http://orgmode.org/), my best planning tool ever. 
