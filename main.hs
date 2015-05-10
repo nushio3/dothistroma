@@ -56,7 +56,7 @@ process fn = do
   case r of
     Done remain doc -> do
                        use doc
-                       putStrLn "DISCONTINUED!"
+                       putStrLn "PARSER DISCONTINUED!"
                        T.putStrLn $ T.take 100 remain
     Partial k -> case k "" of
       Done _ doc -> use doc
