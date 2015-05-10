@@ -38,6 +38,12 @@ data Project = Project
   , doThis :: Bool
   }
 
+
+type ProjPriority = (Double,Double)
+projPriority :: Project -> ProjPriority
+projPriority p = (timeDeserve p - timeUsed p, fromMaybe 0 (fst <$> allocation p))
+
+
 addProject :: Project -> Project -> Project
 addProject a b = Project
                  {projHeading = ((projHeading a){title="Total"}),
@@ -81,8 +87,12 @@ use doc = do
       spans = concat $ map spansOfProj projs
       projs1 = map fillTimeUsed projs
       projs2 = foldr redistribute projs1 spans
+
+      hiscore = maximum $ map projPriority projs2
+      projsRet = markDoThis hiscore projs2
+
   printf "Total Deserv   Used WGT Task\n"
-  mapM_ pprProj $ projs2 ++ [foldr1 addProject projs2  ]
+  mapM_ pprProj $ projsRet ++ [foldr1 addProject projsRet  ]
 
 pprProj :: Project -> IO ()
 pprProj proj = do
@@ -91,9 +101,15 @@ pprProj proj = do
 
       color
         | debt < -1 = C.Blue
-        | debt >  1 = C.Red
+        | debt >  1 = C.Green
         | otherwise = C.White
-  C.setSGR [C.SetColor C.Foreground C.Dull color]
+      cinten
+        | doThis proj = C.BoldIntensity
+        | otherwise = C.NormalIntensity
+      inten
+        | doThis proj = C.Vivid
+        | otherwise = C.Dull
+  C.setSGR [C.SetColor C.Foreground inten  color, C.SetConsoleIntensity cinten]
   putStrLn $ printf "%5d %6.1f %6.1f %3.0f %s" (countHeadingTime h)
     (timeDeserve proj)
     (timeUsed proj)
@@ -136,7 +152,7 @@ earnUsed t@(ts1,_) proj = case allocation proj of
 
 
 toProject :: Heading -> Project
-toProject h = Project{projHeading = h, allocation = alloc, timeUsed = 0, timeDeserve = 0}
+toProject h = Project{projHeading = h, allocation = alloc, timeUsed = 0, timeDeserve = 0, doThis = False}
   where
     Plns plmap = sectionPlannings $ section h
 
@@ -187,3 +203,9 @@ spansOfProj proj = case allocation proj of
 durationMin :: (Maybe Timestamp, Maybe Duration) -> Int
 durationMin (_, Nothing) = 0
 durationMin (_, Just (h,m)) = h*60+m
+
+markDoThis :: ProjPriority -> [Project] -> [Project]
+markDoThis prio [] = error "hiscore not found"
+markDoThis prio (x:xs)
+  | projPriority x >= prio = x{doThis = True} : xs
+  | otherwise              = x:markDoThis prio xs
