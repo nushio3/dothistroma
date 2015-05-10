@@ -11,6 +11,7 @@ import Data.OrgMode.Parse.Attoparsec.Time
 import Data.OrgMode.Parse.Attoparsec.Headings
 import Data.OrgMode.Parse.Types
 import Data.Attoparsec.Text
+import Data.Thyme.Calendar (YearMonthDay)
 import qualified Data.Text as T
 import qualified Data.Text.IO as T
 import System.Environment
@@ -21,6 +22,12 @@ type Timespan      = (Timestamp, Duration)
 
 durationOfTimespan :: Timespan -> Double
 durationOfTimespan (_,(h,m)) = fromIntegral $ 60*h+m
+
+isBefore :: Timestamp -> Timestamp -> Bool
+isBefore a b = un a <= un b
+  where
+    un :: Timestamp -> YearMonthDay
+    un ts = let YMD' x = yearMonthDay $ tsTime ts in x
 
 data Project = Project
   { projHeading :: Heading
@@ -91,17 +98,17 @@ redistribute ts projs =
 claimShare :: Timespan -> Project -> Double
 claimShare (ts1,_) proj = case allocation proj of
   Nothing -> 0
-  Just (w, ts2) -> if show ts1 >= show ts2 then w else 0
+  Just (w, ts2) -> if ts2 `isBefore` ts1 then w else 0
 
 earnDeserve :: Timespan -> Double -> Project -> Project
 earnDeserve (ts1,_) share proj = case allocation proj of
   Nothing -> proj
-  Just (w, ts2) -> if show ts1 >= show ts2 then proj{timeDeserve = timeDeserve proj + share*w } else proj
+  Just (w, ts2) -> if ts2 `isBefore` ts1 then proj{timeDeserve = timeDeserve proj + share*w } else proj
 
 earnUsed :: Timespan -> Project -> Project
 earnUsed t@(ts1,_) proj = case allocation proj of
   Nothing -> proj
-  Just (w, ts2) -> if show ts1 >= show ts2 then proj{timeUsed = timeUsed proj + durationOfTimespan t} else proj
+  Just (w, ts2) -> if ts2 `isBefore` ts1 then proj{timeUsed = timeUsed proj + durationOfTimespan t} else proj
 
 
 
