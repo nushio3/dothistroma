@@ -36,4 +36,17 @@ On the other hand, the time resource is exclusively `used` by the task that owns
 Untracked tasks doues not deserve nor consume any time resources.
 
 
+** Background
 
+Getting things done is great way of organizing things, but it lacks a few thing: it doesn't tell you the precise order of doing the tasks. It doesn't tell you how to balance the effort you put into different project.
+
+This is a problem if you have creative tasks in parallel with deadlined tasks. Creative tasks (such as writing programs, research, learning new things, teach students) are hard to estimate for time, since they tend to develop in unexpected ways. On the other hand, the time consumed by deadlined tasks "expands so as to fill the time available for its completion" (Parkinson, 1955). If we allow this to happen, we might end our life meeting deadlines, getting things done, but learning nothing new. We want to avoid this. We would like to finish all deadlined tasks in fraction of the time available, and use the rest of the time in creative projects, in balanced ways.
+
+Dothistroma is a tiny script that helps us do this.
+
+** Acknowledgement
+
+- Dothistroma is still in a very new phase and are welcome for suggestion and improvements.
+- I can't thank enough the creators of [Org-mode](http://orgmode.org/), my best planning tool ever. 
+- Parnell for writing [Orgmode parser in Hakell](https://github.com/digitalmentat/orgmode-parse).
+- Dothistroma is named after [Fungi that infect pines](http://en.wikipedia.org/wiki/Dothistroma_septosporum) and pun on "do this".
