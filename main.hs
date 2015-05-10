@@ -14,6 +14,7 @@ import Data.Attoparsec.Text
 import Data.Thyme.Calendar (YearMonthDay)
 import qualified Data.Text as T
 import qualified Data.Text.IO as T
+import qualified System.Console.ANSI as C
 import System.Environment
 import Text.Printf
 import Text.Read (readMaybe)
@@ -34,10 +35,17 @@ data Project = Project
   , allocation :: Maybe (Double, Timestamp)
   , timeUsed :: Double
   , timeDeserve :: Double
+  , doThis :: Bool
   }
 
 addProject :: Project -> Project -> Project
-addProject a b = Project ((projHeading a){title="Total"}) (addA (allocation a) (allocation b)) (timeUsed a + timeUsed b) (timeDeserve a + timeDeserve b)
+addProject a b = Project
+                 {projHeading = ((projHeading a){title="Total"}),
+                  allocation = (addA (allocation a) (allocation b)),
+                  timeUsed = (timeUsed a + timeUsed b),
+                  timeDeserve = (timeDeserve a + timeDeserve b),
+                  doThis = False
+                  }
   where
     addA (Just (wa,ta)) (Just (wb,tb)) = Just (wa+wb, ta) -- smaller of?
     addA a b = a <|> b
@@ -65,8 +73,9 @@ process fn = do
 
 use :: Document -> IO ()
 use doc = do
-  encodeFile "test.yaml" doc
-  T.writeFile "test.txt" $ thow doc
+  encodeFile "debug.yaml" doc
+  T.writeFile "debug.txt" $ thow doc
+
   let projs = map toProject $ documentHeadings doc
       spans :: [Timespan]
       spans = concat $ map spansOfProj projs
@@ -78,6 +87,13 @@ use doc = do
 pprProj :: Project -> IO ()
 pprProj proj = do
   let h = projHeading proj
+      debt = (timeDeserve proj) -(timeUsed proj)
+
+      color
+        | debt < -1 = C.Blue
+        | debt >  1 = C.Red
+        | otherwise = C.White
+  C.setSGR [C.SetColor C.Foreground C.Dull color]
   putStrLn $ printf "%5d %6.1f %6.1f %3.0f %s" (countHeadingTime h)
     (timeDeserve proj)
     (timeUsed proj)
