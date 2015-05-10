@@ -198,7 +198,7 @@ findSpans h = t ++ t2
 spansOfProj :: Project -> [Timespan]
 spansOfProj proj = case allocation proj of
   Nothing -> []
-  Just _  -> findSpans $ projHeading proj
+  Just (_,tsp)  -> filter (\(tss,_) -> tsp `isBefore` tss) $ findSpans $ projHeading proj
 
 durationMin :: (Maybe Timestamp, Maybe Duration) -> Int
 durationMin (_, Nothing) = 0
