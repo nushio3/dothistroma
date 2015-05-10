@@ -11,7 +11,7 @@ You realize.
 
 Based on the weight assigned to each tasks, Dothistroma counts how much time resource you have had, how you have spent (`used`), and how you would have wanted to spend them (`deserv`). Based on the measurement, Dothistroma points out the single task that you should do next, so that `used` approximates `deserv`. The task is priotized in the following order.
 
-- The task with larger (`deserv` - `used`).
+- The task with larger (`deserv` minus `used`).
 - In case of tie, the task with the larger weight.
 - In case of tie, the task that is found earlier in the `.org` file.
  
@@ -29,11 +29,15 @@ A task is _tracked_ by Dothistroma, if it is `SCHEDULED` and not `CLOSED`, and h
   WEIGHT: 120
 ```
 
-Each `CLOCK:` line in the tracked task is considered as your free time resource. A tracked task _deserves_ for a time resource, if the timespan of the time resource stars no sooner than the scheduled time of the task. Each time resource is  splitted proportionally to the weight of the tasks and adds up to in the `deserv` section.
+Each `CLOCK:` line in the tracked task are record of your time resource. The time resource is "consumed" in two ways: in the way you wanted to consume (`deserv`), and in the way you did consume (`used`). The total of the two ways of consumption should always match.
 
-On the other hand, the time resource is exclusively `used` by the task that owns it.
+A tracked task _deserves_ for a time resource, if the timespan of the time resource stars no sooner than the scheduled time of the task. Each time resource is  splitted proportionally to the weight of the tasks and adds up to in the `deserv` section.
 
-Untracked tasks doues not deserve nor consume any time resources.
+On the other hand, the time resource is exclusively `used` by the task that owns it in the `.org` file.
+
+Untracked tasks doues not deserve nor use any time resources.
+
+In the ideal state where (`deserv` == `used`) for all tasks, the time resource is used by all the tasks you've been woking on (`SCHEDULED`), in proportion to their `WEIGHT` in long-time average.
 
 
 ## Background
@@ -50,4 +54,5 @@ Dothistroma is a tiny script that helps us do this.
 - Dothistroma is still in a very new phase and are welcome for suggestion and improvements.
 - I can't thank enough the creators of [Org-mode](http://orgmode.org/), my best planning tool ever. 
 - Parnell for writing [Orgmode parser in Hakell](https://github.com/digitalmentat/orgmode-parse).
+- I would like to port Dothistroma on elisp (naturally), but I need help on the language. Thanks in advance.
 - Dothistroma is named after [Fungi that infect pines](http://en.wikipedia.org/wiki/Dothistroma_septosporum) and pun on "do this".
