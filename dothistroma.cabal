@@ -23,7 +23,7 @@ executable dothistroma
   build-depends:       base >=4.7 && <4.8
                      , ansi-terminal
                      , attoparsec
-                     , orgmode-parse
+                     , orgmode-parse >= 0.1.1.0
                      , text
                      , thyme
                      , unordered-containers

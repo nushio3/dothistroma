@@ -91,7 +91,7 @@ use doc = do
       hiscore = maximum $ map projPriority projs2
       projsRet = markDoThis hiscore projs2
 
-  printf "Total Deserv   Used WGT Task\n"
+  printf "Total Deserv   Used Invest WGT Task\n"
   mapM_ pprProj $ projsRet ++ [foldr1 addProject projsRet  ]
 
 pprProj :: Project -> IO ()
@@ -100,6 +100,7 @@ pprProj proj = do
       debt = (timeDeserve proj) -(timeUsed proj)
 
       color
+        | doThis proj = C.Yellow
         | debt < -1 = C.Blue
         | debt >  1 = C.Green
         | otherwise = C.White
@@ -110,10 +111,19 @@ pprProj proj = do
         | doThis proj = C.Vivid
         | otherwise = C.Dull
   C.setSGR [C.SetColor C.Foreground inten  color, C.SetConsoleIntensity cinten]
-  putStrLn $ printf "%5d %6.1f %6.1f %3.0f %s" (countHeadingTime h)
-    (timeDeserve proj)
-    (timeUsed proj)
+  putStrLn $ printf "%5d %6s %6s %6s %3.0f %s" (countHeadingTime h)
+    (hm $ timeDeserve proj)
+    (hm $ timeUsed proj)
+    (hm $ timeDeserve proj - timeUsed proj)
     (fromMaybe 0 (fst <$> allocation proj))  (T.unpack $ title h)
+
+  where
+    hm :: Double -> String
+    hm x
+      | x < 0 = "-" ++ hm (negate x)
+      | otherwise = let
+          (h,m) = divMod (round x) (60 ::Int)
+          in printf "%d:%02d" h m
 
 fillTimeUsed :: Project -> Project
 fillTimeUsed proj = foldr earnUsed proj spans
