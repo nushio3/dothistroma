@@ -3,6 +3,8 @@
 import Control.Applicative
 import Control.Monad
 import qualified Data.HashMap.Strict as HM
+import Data.Function(on)
+import Data.List(sortBy)
 import Data.Maybe
 import Data.Monoid
 import Data.Yaml
@@ -43,6 +45,11 @@ type ProjPriority = (Double,Double)
 projPriority :: Project -> ProjPriority
 projPriority p = (timeDeserve p - timeUsed p, fromMaybe 0 (fst <$> allocation p))
 
+projListingOrder :: Project -> (Bool,Double,Int)
+projListingOrder p = (not $ isJust $ allocation p ,
+                      negate $ fst $ projPriority p,
+                      negate $ countHeadingTime $ projHeading p)
+
 
 addProject :: Project -> Project -> Project
 addProject a b = Project
@@ -82,7 +89,7 @@ use doc = do
   encodeFile "debug.yaml" doc
   T.writeFile "debug.txt" $ thow doc
 
-  let projs = map toProject $ documentHeadings doc
+  let projs = concat $ map (toProjects 0) $ documentHeadings doc
       spans :: [Timespan]
       spans = concat $ map spansOfProj projs
       projs1 = map fillTimeUsed projs
@@ -91,8 +98,8 @@ use doc = do
       hiscore = maximum $ map projPriority projs2
       projsRet = markDoThis hiscore projs2
 
-  printf "Total Deserv   Used Invest WGT Task\n"
-  mapM_ pprProj $ projsRet ++ [foldr1 addProject projsRet  ]
+  printf "Total Deserv   Used Assign WGT Task\n"
+  mapM_ pprProj $ sortBy (compare `on` projListingOrder) projsRet ++ [foldr1 addProject projsRet  ]
 
 pprProj :: Project -> IO ()
 pprProj proj = do
@@ -111,15 +118,16 @@ pprProj proj = do
         | doThis proj = C.Vivid
         | otherwise = C.Dull
   C.setSGR [C.SetColor C.Foreground inten  color, C.SetConsoleIntensity cinten]
-  putStrLn $ printf "%5d %6s %6s %6s %3.0f %s" (countHeadingTime h)
-    (hm $ timeDeserve proj)
-    (hm $ timeUsed proj)
+  putStrLn $ printf "%5d %6.0f %6.0f %6s %3.0f %s" (countHeadingTime h)
+    (timeDeserve proj)
+    (timeUsed proj)
     (hm $ timeDeserve proj - timeUsed proj)
     (fromMaybe 0 (fst <$> allocation proj))  (T.unpack $ title h)
 
   where
     hm :: Double -> String
     hm x
+      | abs x < 1e-14 = "0"
       | x < 0 = "-" ++ hm (negate x)
       | otherwise = let
           (h,m) = divMod (round x) (60 ::Int)
@@ -155,14 +163,8 @@ earnUsed t@(ts1,_) proj = case allocation proj of
 
 
 
--- printHeading :: Heading -> IO ()
--- printHeading h = do
---   let p = toProject h
---   putStrLn $ printf "%5d %3.0f %s" (countHeadingTime h) (fromMaybe 0 (fst <$> allocation p))  (T.unpack $ title h)
-
-
-toProject :: Heading -> Project
-toProject h = Project{projHeading = h, allocation = alloc, timeUsed = 0, timeDeserve = 0, doThis = False}
+toProjects :: Int -> Heading -> [Project]
+toProjects level h = meAsProject ++ concat (map (toProjects (level+1)) (subHeadings h))
   where
     Plns plmap = sectionPlannings $ section h
 
@@ -172,6 +174,13 @@ toProject h = Project{projHeading = h, allocation = alloc, timeUsed = 0, timeDes
       guard $ HM.lookup CLOSED plmap == Nothing
       (w:_) <- return $ catMaybes $ map parseWeight $ T.lines $ sectionParagraph $ section h
       return (w,sts)
+
+    meAsProject :: [Project]
+    meAsProject
+     | level <= 0   ||
+       isJust alloc = [Project{projHeading = h, allocation = alloc, timeUsed = 0, timeDeserve = 0, doThis = False}]
+     | otherwise  = []
+
 
 parseWeight :: T.Text -> Maybe Double
 parseWeight str = do
