@@ -162,7 +162,6 @@ earnUsed t@(ts1,_) proj = case allocation proj of
 
 
 
-
 toProjects :: Int -> Heading -> [Project]
 toProjects level h = meAsProject ++ concat (map (toProjects (level+1)) (subHeadings h))
   where
