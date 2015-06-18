@@ -176,7 +176,7 @@ toProjects level h = meAsProject ++ concat (map (toProjects (level+1)) (subHeadi
 
     meAsProject :: [Project]
     meAsProject
-     | level <= 0   ||
+     | -- level <= 0   || -- I'll suspend the level 0 track for the moment.
        isJust alloc = [Project{projHeading = h, allocation = alloc, timeUsed = 0, timeDeserve = 0, doThis = False}]
      | otherwise  = []
 
