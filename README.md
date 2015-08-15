@@ -1,7 +1,7 @@
 # Dothistroma
 A load balancer that works on emacs Org mode.
 
-![dothistroma](https://cloud.githubusercontent.com/assets/512367/7553961/150ab76c-f74d-11e4-8651-d582ef450742.png)
+![dothistroma](https://cloud.githubusercontent.com/assets/512367/9287059/7c4be516-433f-11e5-96ae-67a7186e345d.png)
 
 With Dothistroma, you never pine any more.
 
